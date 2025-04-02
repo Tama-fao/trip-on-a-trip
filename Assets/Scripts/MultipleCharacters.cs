@@ -1,6 +1,7 @@
 using UnityEngine;
 using LLMUnity;
 using UnityEngine.UI;
+using System.Threading.Tasks;
 
 namespace LLMUnitySamples
 {
@@ -13,12 +14,20 @@ namespace LLMUnitySamples
         int interactionCount = 0;
         const int maxInteractions = 3;
 
-        public MultipleCharactersInteraction(InputField playerText, Text AIText, LLMCharacter llmCharacter, System.Action<string> onResponseComplete)
+
+        ElevenlabsAPI api;
+
+        string voice_id;
+
+        public MultipleCharactersInteraction(InputField playerText, Text AIText, LLMCharacter llmCharacter, System.Action<string> onResponseComplete,  string voice_id,
+            ElevenlabsAPI api = null)
         {
             this.playerText = playerText;
             this.AIText = AIText;
             this.llmCharacter = llmCharacter;
             this.onResponseComplete = onResponseComplete;
+                 this.api = api;
+            this.voice_id = voice_id;
         }
 
         public void Start()
@@ -50,28 +59,63 @@ namespace LLMUnitySamples
         }
 
 
-        public void onChatComplete(string message)
+             public async void onChatComplete(string message)
         {
             interactionCount++;
+
+            api.AudioReceived.AddListener(OnAudioReceived);
+            api.GetAudio(AIText.text, voice_id);
+
+
+        }
+
+ private void OnAudioReceived(AudioClip audioClip)
+        {
+            var audioHandler = api.GetComponent<AudioPlaybackHandler>();
+            if (audioHandler != null)
+            {
+                audioHandler.PlayAudioClip(audioClip);
+                WaitForAudioToFinish(audioHandler).ConfigureAwait(false);
+            }
+        }
+        private async Task WaitForAudioToFinish(AudioPlaybackHandler audioHandler)
+        {
+            while (audioHandler.IsPlaying())
+            {
+                await Task.Yield(); // Yield control back to the main thread
+            }
+
+            playerText.interactable = true;
+            playerText.Select();
+            playerText.text = "";
             onResponseComplete(AIText.text);
         }
+
+
+
     }
 
-    public class MultipleCharacters : MonoBehaviour
+   public class MultipleCharacters : MonoBehaviour
     {
         public LLMCharacter llmCharacter1;
         public InputField playerText1;
         public Text AIText1;
         MultipleCharactersInteraction interaction1;
+        public string voiceId1;
 
         public LLMCharacter llmCharacter2;
+        public InputField playerText2;
         public Text AIText2;
         MultipleCharactersInteraction interaction2;
+        public string voiceId2;
+
+        [SerializeField]
+        private ElevenlabsAPI _elevenLabsAPI;
 
         void Start()
         {
-            interaction1 = new MultipleCharactersInteraction(playerText1, AIText1, llmCharacter1, ResponseFromCharacter1);
-            interaction2 = new MultipleCharactersInteraction(null, AIText2, llmCharacter2, ResponseFromCharacter2);
+            interaction1 = new MultipleCharactersInteraction(playerText1, AIText1, llmCharacter1, ResponseFromCharacter1, voiceId1, _elevenLabsAPI);
+            interaction2 = new MultipleCharactersInteraction(null, AIText2, llmCharacter2, ResponseFromCharacter2, voiceId2, _elevenLabsAPI);
             interaction1.Start();
         }
 
