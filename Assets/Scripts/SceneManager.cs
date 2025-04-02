@@ -1,16 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class SceneManager : MonoBehaviour
+public class SceneChanger : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    // Diese Methode wird durch das Animation Event aufgerufen
+    public void ChangeScene()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        SceneManager.LoadScene("Scene 2"); // Nächste Szene laden (Index oder Name anpassen)
     }
 }
