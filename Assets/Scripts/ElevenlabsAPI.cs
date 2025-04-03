@@ -52,7 +52,7 @@ public class ElevenlabsAPI : MonoBehaviour {
     IEnumerator DoRequest(string message, string voiceId) {
         var postData = new TextToSpeechRequest {
             text = message,
-            model_id = "eleven_monolingual_v1"
+            model_id = "eleven_multilingual_v2"
         };
 
         // TODO: This could be easily exposed in the Unity inspector,
@@ -65,7 +65,7 @@ public class ElevenlabsAPI : MonoBehaviour {
         };
         postData.voice_settings = voiceSetting;
         var json = JsonConvert.SerializeObject(postData);
-        var uH = new UploadHandlerRaw(Encoding.ASCII.GetBytes(json));
+        var uH = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
         var stream = (Streaming) ? "/stream" : "";
         var url = $"{_apiUrl}/v1/text-to-speech/{voiceId}{stream}?optimize_streaming_latency={LatencyOptimization}";
         var request = UnityWebRequest.PostWwwForm(url, json);
@@ -92,7 +92,7 @@ public class ElevenlabsAPI : MonoBehaviour {
     [Serializable]
     public class TextToSpeechRequest {
         public string text;
-        public string model_id; // eleven_monolingual_v1
+        public string model_id; 
         public VoiceSettings voice_settings;
     }
 
