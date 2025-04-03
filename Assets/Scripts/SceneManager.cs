@@ -8,4 +8,5 @@ public class SceneChanger : MonoBehaviour
     {
         SceneManager.LoadScene("Scene 2"); // Nächste Szene laden (Index oder Name anpassen)
     }
+ 
 }
